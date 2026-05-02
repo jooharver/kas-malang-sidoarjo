@@ -94,3 +94,29 @@
     font-size: 1.5rem;
   }
 }
+
+/* Tambahkan ini di bagian bawah login.module.css */
+
+.footerLink {
+  margin-top: 1.5rem;
+  text-align: center;
+  border-top: 1px solid #222;
+  padding-top: 1rem;
+}
+
+.footerLink p {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.footerLink a {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.footerLink a:hover {
+  text-decoration: underline;
+  color: #059669;
+}

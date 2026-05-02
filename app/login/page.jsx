@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Import Link
 import styles from './login.module.css';
 import Swal from 'sweetalert2';
 
@@ -77,6 +78,11 @@ export default function LoginPage() {
             {loading ? 'Mengecek...' : 'Login Sekarang'}
           </button>
         </form>
+
+        {/* Link Tambahan untuk Publik */}
+        <div className={styles.footerLink}>
+          <p>Bukan admin? <Link href="/kas">Lihat Rekap Kas di sini</Link></p>
+        </div>
       </div>
     </div>
   );

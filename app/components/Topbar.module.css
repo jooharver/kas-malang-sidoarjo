@@ -44,12 +44,24 @@
 /* RESPONSIVE: Mobile Kecil */
 @media (max-width: 480px) {
   .topbar {
-    padding: 0 15px;
+    padding: 0 12px; /* Padding sedikit lebih rapat */
   }
+  
   .pageTitle {
-    font-size: 0.95rem;
+    font-size: 0.9rem; /* Perkecil sedikit agar ruang lebih lega */
   }
+
+  .profileArea {
+    gap: 8px; /* Rapatkan jarak antar elemen profil */
+  }
+
   .greeting {
-    display: none; /* Sembunyikan "Halo, Rek" di HP biar gak sempit */
+    display: block; /* Pastikan tetap muncul */
+    font-size: 0.75rem; /* Font diperkecil agar tidak menabrak judul */
+  }
+
+  .avatarWrapper {
+    width: 30px; /* Perkecil avatar sedikit di mobile */
+    height: 30px;
   }
 }

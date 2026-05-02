@@ -4,30 +4,58 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { LayoutDashboard, Settings, LogOut, ChevronLeft, Menu, Wallet, X } from 'lucide-react';
+import { 
+  Settings, 
+  LogOut, 
+  LogIn, 
+  ChevronLeft, 
+  Menu, 
+  Wallet, 
+  X 
+} from 'lucide-react';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
-  const [isExpanded, setIsExpanded] = useState(true); // Desktop collapse
-  const [isOpen, setIsOpen] = useState(false); // Mobile toggle
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
 
-  // Tutup sidebar otomatis kalau pindah halaman di mobile
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  useEffect(() => {
+    // 1. Cek User Saat Pertama Kali Load
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+    checkUser();
+
+    // 2. Pantau Perubahan Status Login (Login/Logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
 
   const handleLogout = async () => {
-    const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
     await supabase.auth.signOut();
+    setUser(null);
     router.push('/login');
     router.refresh();
   };
 
   return (
     <>
-      {/* Overlay: Muncul cuma pas mobile sidebar terbuka */}
       {isOpen && <div className={styles.overlay} onClick={() => setIsOpen(false)} />}
 
       <aside className={`
@@ -37,13 +65,9 @@ export default function Sidebar() {
       `}>
         <div className={styles.header}>
           {(isExpanded || isOpen) && <span className={styles.logo}>Kas Iuran</span>}
-          
-          {/* Tombol Toggle (Desktop) */}
           <button className={`${styles.toggleBtn} hidden md:flex`} onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
           </button>
-
-          {/* Tombol Close (Mobile) */}
           <button className="md:hidden text-gray-400" onClick={() => setIsOpen(false)}>
             <X size={24} />
           </button>
@@ -52,24 +76,35 @@ export default function Sidebar() {
         <nav className={styles.nav}>
           <Link href="/kas" className={`${styles.navLink} ${pathname === '/kas' ? styles.activeLink : ''}`}>
             <Wallet size={22} />
-            <span className={styles.linkLabel}>Rekap Kas</span>
+            {(isExpanded || isOpen) && <span className={styles.linkLabel}>Rekap Kas</span>}
           </Link>
 
-          <Link href="/admin" className={`${styles.navLink} ${pathname === '/admin' ? styles.activeLink : ''}`}>
-            <Settings size={22} />
-            <span className={styles.linkLabel}>Kelola Admin</span>
-          </Link>
+          {/* HANYA MUNCUL JIKA ADMIN LOGIN */}
+          {user && (
+            <Link href="/admin" className={`${styles.navLink} ${pathname === '/admin' ? styles.activeLink : ''}`}>
+              <Settings size={22} />
+              {(isExpanded || isOpen) && <span className={styles.linkLabel}>Kelola Admin</span>}
+            </Link>
+          )}
         </nav>
 
         <div className={styles.footer}>
-          <button onClick={handleLogout} className={styles.logoutBtn}>
-            <LogOut size={22} />
-            <span className={styles.linkLabel}>Keluar</span>
-          </button>
+          {user ? (
+            // JIKA LOGIN -> TOMBOL KELUAR
+            <button onClick={handleLogout} className={styles.logoutBtn}>
+              <LogOut size={22} />
+              {(isExpanded || isOpen) && <span className={styles.linkLabel}>Keluar</span>}
+            </button>
+          ) : (
+            // JIKA TIDAK LOGIN -> TOMBOL LOGIN ADMIN
+            <Link href="/login" className={styles.loginBtn}>
+              <LogIn size={22} />
+              {(isExpanded || isOpen) && <span className={styles.linkLabel}>Login Admin</span>}
+            </Link>
+          )}
         </div>
       </aside>
 
-      {/* Button Hamburger (Cuma muncul di Mobile) */}
       <button 
         className="fixed bottom-6 right-6 p-4 bg-emerald-500 text-white rounded-full shadow-lg z-[80] md:hidden"
         onClick={() => setIsOpen(true)}
