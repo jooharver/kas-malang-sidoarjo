@@ -44,7 +44,6 @@
   font-size: 0.85rem;
 }
 
-/* FIX BUG TOMBOL TAMBAH ANGGOTA */
 .flexRow {
   display: flex;
   gap: 10px;
@@ -58,7 +57,6 @@
   margin-top: 1rem;
 }
 
-/* Kustomisasi Scrollbar Horizontal */
 .tableWrapper::-webkit-scrollbar { height: 10px; }
 .tableWrapper::-webkit-scrollbar-track { background: #111; }
 .tableWrapper::-webkit-scrollbar-thumb {
@@ -114,17 +112,68 @@
 .buttonEdit { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 .buttonDelete { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
+/* BADGES (Jika ada) */
+.badgeMasuk { background-color: rgba(16, 185, 129, 0.1); color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+.badgeKeluar { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+
+
+/* --- MODAL STYLES --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalBody {
+  background-color: #111;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.closeButton {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.closeButton:hover { color: #fff; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); scale: 0.95; }
+  to { opacity: 1; transform: translateY(0); scale: 1; }
+}
+
 /* RESPONSIVE FIX */
 @media (max-width: 768px) {
   .formGrid { grid-template-columns: 1fr; }
-  
-  /* Form Tambah Anggota jadi vertikal di HP */
-  .flexRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
+  .flexRow { flex-direction: column; align-items: stretch; }
   .inputGroup { max-width: none !important; }
-  
   .buttonSubmit { width: 100%; }
 }

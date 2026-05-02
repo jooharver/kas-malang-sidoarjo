@@ -5,6 +5,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import styles from './admin.module.css';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import ModalEdit from '../../components/ModalEdit';
 
 const MySwal = withReactContent(Swal);
 const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -17,9 +18,12 @@ export default function AdminPage() {
   const [searchKas, setSearchKas] = useState('');
   const [searchAnggota, setSearchAnggota] = useState('');
 
-  // State Transaksi
-  const [editId, setEditId] = useState(null); 
+  // State Transaksi (Create)
   const [form, setForm] = useState({ anggota_id: '', nominal: '', tipe: 'masuk', keterangan: '', bulan: new Date().getMonth() + 1 });
+
+  // State Transaksi (Edit Modal)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
 
   // State Anggota
   const [editAnggotaId, setEditAnggotaId] = useState(null);
@@ -55,25 +59,41 @@ export default function AdminPage() {
 
   const Toast = MySwal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: '#111', color: '#fff' });
 
-  // --- HANDLER TRANSAKSI ---
-  const handleSubmitKas = async (e) => {
+  // --- HANDLER TRANSAKSI (CREATE) ---
+  const handleCreateKas = async (e) => {
     e.preventDefault();
-    const res = await MySwal.fire({ title: editId ? 'Update Transaksi?' : 'Simpan Transaksi?', icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', background: '#111', color: '#fff' });
+    const res = await MySwal.fire({ title: 'Simpan Transaksi?', icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', background: '#111', color: '#fff' });
     
     if (res.isConfirmed) {
       setLoadingSubmit(true);
       const payload = { ...form, nominal: parseInt(form.nominal) };
-      const { error } = editId 
-        ? await supabase.from('kas_iuran').update(payload).eq('id', editId) 
-        : await supabase.from('kas_iuran').insert([payload]);
+      const { error } = await supabase.from('kas_iuran').insert([payload]);
         
       if (!error) { 
-        Toast.fire({ icon: 'success', title: 'Berhasil!' }); 
-        setEditId(null); 
+        Toast.fire({ icon: 'success', title: 'Berhasil ditambahkan!' }); 
         setForm({ anggota_id: '', nominal: '', tipe: 'masuk', keterangan: '', bulan: new Date().getMonth() + 1 }); 
         fetchData(); 
       }
       setLoadingSubmit(false);
+    }
+  };
+
+  // --- HANDLER TRANSAKSI (UPDATE VIA MODAL) ---
+  const handleUpdateKas = async (id, updatedForm) => {
+    const res = await MySwal.fire({ title: 'Update Transaksi?', icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', background: '#111', color: '#fff' });
+    
+    if (res.isConfirmed) {
+      const payload = { ...updatedForm, nominal: parseInt(updatedForm.nominal) };
+      const { error } = await supabase.from('kas_iuran').update(payload).eq('id', id);
+        
+      if (!error) { 
+        Toast.fire({ icon: 'success', title: 'Berhasil diupdate!' }); 
+        setIsModalOpen(false);
+        setEditData(null);
+        fetchData(); 
+      } else {
+        Toast.fire({ icon: 'error', title: 'Gagal update' });
+      }
     }
   };
 
@@ -116,12 +136,20 @@ export default function AdminPage() {
     <div className={styles.container}>
       <h1 className={styles.title}>Kelola Admin</h1>
 
-      {/* FORM INPUT TRANSAKSI */}
+      {/* MODAL EDIT */}
+      <ModalEdit 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        data={editData} 
+        originalAnggota={originalAnggota} 
+        onSave={handleUpdateKas}
+        styles={styles}
+      />
+
+      {/* FORM INPUT TRANSAKSI (STRICTLY CREATE) */}
       <div className={styles.formCard}>
-        <h2 className="text-xs font-bold mb-4 uppercase tracking-widest text-emerald-500">
-          {editId ? '📝 Edit Transaksi' : '➕ Tambah Transaksi'}
-        </h2>
-        <form onSubmit={handleSubmitKas}>
+        <h2 className="text-xs font-bold mb-4 uppercase tracking-widest text-emerald-500">➕ Tambah Transaksi</h2>
+        <form onSubmit={handleCreateKas}>
           <div className={styles.formGrid}>
             <div className={styles.inputGroup}>
               <label className={styles.label}>Anggota</label>
@@ -147,18 +175,15 @@ export default function AdminPage() {
               <label className={styles.label}>Nominal (Rp)</label>
               <input type="number" className={styles.input} value={form.nominal} onChange={e => setForm({...form, nominal: e.target.value})} required />
             </div>
-            <div className={styles.inputGroup}>
+            <div className={styles.inputGroup} style={{ gridColumn: '1 / -1' }}>
               <label className={styles.label}>Keterangan</label>
               <input type="text" className={styles.input} value={form.keterangan} onChange={e => setForm({...form, keterangan: e.target.value})} placeholder="Opsional" />
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex mt-4">
             <button type="submit" className={styles.buttonSubmit} disabled={loadingSubmit}>
-              {editId ? 'Update Data' : 'Simpan Transaksi'}
+              Simpan Transaksi
             </button>
-            {editId && (
-              <button type="button" onClick={() => {setEditId(null); setForm({ anggota_id: '', nominal: '', tipe: 'masuk', keterangan: '', bulan: new Date().getMonth() + 1 });}} className={styles.buttonDelete}>Batal</button>
-            )}
           </div>
         </form>
       </div>
@@ -200,9 +225,8 @@ export default function AdminPage() {
                   <td className={styles.td}>
                     <div className="flex gap-1">
                       <button onClick={() => {
-                        setEditId(item.id);
-                        setForm({ anggota_id: item.anggota?.id, nominal: item.nominal, tipe: item.tipe, keterangan: item.keterangan, bulan: item.bulan });
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setEditData(item);
+                        setIsModalOpen(true);
                       }} className={styles.buttonEdit}>Edit</button>
                       <button onClick={() => handleHapusKas(item.id)} className={styles.buttonDelete}>Hapus</button>
                     </div>
