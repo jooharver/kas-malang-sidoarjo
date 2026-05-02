@@ -1,0 +1,130 @@
+.container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+/* FORM STYLING */
+.formCard, .anggotaCard {
+  background-color: #111;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #222;
+  margin-bottom: 1.5rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+
+.input, .select {
+  width: 100%;
+  padding: 0.6rem;
+  background-color: #000;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+/* FIX BUG TOMBOL TAMBAH ANGGOTA */
+.flexRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+/* TABLE STYLING */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+/* Kustomisasi Scrollbar Horizontal */
+.tableWrapper::-webkit-scrollbar { height: 10px; }
+.tableWrapper::-webkit-scrollbar-track { background: #111; }
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+  border: 2px solid #111;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 500px;
+}
+
+.th {
+  text-align: left;
+  padding: 0.75rem;
+  background-color: #1a1a1a;
+  color: #64748b;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid #333;
+}
+
+.td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #222;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+/* BUTTONS */
+.buttonSubmit {
+  padding: 0.6rem 1.2rem;
+  background-color: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.buttonEdit, .buttonDelete {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.buttonEdit { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.buttonDelete { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+/* RESPONSIVE FIX */
+@media (max-width: 768px) {
+  .formGrid { grid-template-columns: 1fr; }
+  
+  /* Form Tambah Anggota jadi vertikal di HP */
+  .flexRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .inputGroup { max-width: none !important; }
+  
+  .buttonSubmit { width: 100%; }
+}
