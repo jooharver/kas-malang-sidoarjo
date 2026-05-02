@@ -9,11 +9,13 @@ const poppins = Poppins({
   variable: "--font-poppins", 
 });
 
-export const metadata: Metadata = {
-  title: "Kas Malang Sidoarjo",
-  description: "Aplikasi iuran kas",
+export const metadata = {
+  title: 'Kas Malang Sidoarjo',
+  description: 'Aplikasi Rekap Kas Iuran',
+  icons: {
+    icon: '/tegar.png', // Jika kamu menaruhnya di folder public
+  },
 };
-
 export default function RootLayout({
   children,
 }: {
