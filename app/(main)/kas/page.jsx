@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import styles from './kas.module.css';
-import { Users, CheckCircle, XCircle } from 'lucide-react';
+import { Users, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 
 const NAMA_BULAN = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -22,19 +22,15 @@ export default function KasPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
-  // Ambil bulan sekarang (1-12)
   const bulanSekarang = new Date().getMonth() + 1;
   const namaBulanSekarang = NAMA_BULAN[bulanSekarang - 1];
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      
-      // 1. Ambil Total Anggota
       const { count } = await supabase.from('anggota').select('*', { count: 'exact', head: true });
       setTotalAnggota(count || 0);
 
-      // 2. Ambil Data Kas
       const { data, error } = await supabase
         .from('kas_iuran')
         .select(`
@@ -51,7 +47,7 @@ export default function KasPage() {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     const results = originalData.filter((item) => {
@@ -62,7 +58,24 @@ export default function KasPage() {
     setFilteredData(results);
   }, [searchTerm, originalData]);
 
-  // Hitung Statisik Bulan Ini
+  const ringkasanDetail = originalData.reduce((acc, curr) => {
+    const bulanNama = NAMA_BULAN[curr.bulan - 1];
+    if (!acc[bulanNama]) {
+      acc[bulanNama] = { masuk: 0, keluar: 0, total: 0 };
+    }
+    
+    if (curr.tipe === 'masuk') {
+      acc[bulanNama].masuk += curr.nominal;
+      acc[bulanNama].total += curr.nominal;
+    } else {
+      acc[bulanNama].keluar += curr.nominal;
+      acc[bulanNama].total -= curr.nominal;
+    }
+    return acc;
+  }, {});
+
+  const grandTotal = Object.values(ringkasanDetail).reduce((a, b) => a + b.total, 0);
+
   const sudahBayar = originalData.filter(item => item.bulan === bulanSekarang && item.tipe === 'masuk').length;
   const belumBayar = totalAnggota - sudahBayar;
 
@@ -76,7 +89,6 @@ export default function KasPage() {
     <div className={styles.container}>
       <h1 className={styles.title}>Rekap Kas</h1>
 
-      {/* KPI CARDS */}
       <div className={styles.kpiGrid}>
         <div className={styles.kpiCard}>
           <div className="flex justify-between items-start">
@@ -106,7 +118,6 @@ export default function KasPage() {
         </div>
       </div>
 
-      {/* SEARCH BAR */}
       <div className={styles.searchWrapper}>
         <input
           type="text"
@@ -117,7 +128,6 @@ export default function KasPage() {
         />
       </div>
       
-      {/* TABLE */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -153,6 +163,51 @@ export default function KasPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className={styles.summarySection}>
+        <div className="flex items-center gap-2 mb-4">
+            <BarChart3 size={20} className="text-emerald-500" />
+            <h2 className={styles.summaryTitle}>Laporan Keuangan Bulanan</h2>
+        </div>
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.th}>Bulan</th>
+                <th className={styles.th}>Pemasukan (In)</th>
+                <th className={styles.th}>Pengeluaran (Out)</th>
+                <th className={styles.th}>Total Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(ringkasanDetail).map(([bulan, data]) => (
+                <tr key={bulan}>
+                  <td className={styles.td}>{bulan}</td>
+                  <td className={`${styles.td} text-blue-400 font-mono`}>
+                    Rp{data.masuk.toLocaleString('id-ID')}
+                  </td>
+                  <td className={`${styles.td} text-red-400 font-mono`}>
+                    Rp{data.keluar.toLocaleString('id-ID')}
+                  </td>
+                  <td className={`${styles.td} font-mono ${data.total < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                    Rp{data.total.toLocaleString('id-ID')}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className={styles.footerRow}>
+                <td colSpan="4">
+                  <div className={styles.fullFooterContent}>
+                    <span className={styles.grandLabel}>SALDO KAS SAAT INI (GRAND TOTAL)</span>
+                    <span className={styles.grandValue}>Rp{grandTotal.toLocaleString('id-ID')}</span>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
     </div>
   );

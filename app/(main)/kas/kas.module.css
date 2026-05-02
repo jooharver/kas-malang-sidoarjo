@@ -14,21 +14,20 @@
   gap: 8px;
 }
 
-/* KPI SECTION - DESAIN TUMPUK TAPI RAMPING */
 .kpiGrid {
   display: flex;
-  flex-direction: column; /* Tetap tumpuk vertikal */
-  gap: 0.5rem; /* Jarak antar kartu sangat rapat */
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1.25rem;
 }
 
 .kpiCard {
   background-color: #111;
-  padding: 0.6rem 1rem; /* Padding sangat tipis */
+  padding: 0.6rem 1rem;
   border-radius: 8px;
   border: 1px solid #222;
   display: flex;
-  justify-content: space-between; /* Label kiri, Angka kanan agar hemat baris */
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -46,10 +45,9 @@
 }
 
 .kpiSub {
-  display: none; /* Hilangkan teks tambahan biar gak penuh */
+  display: none;
 }
 
-/* SEARCH SECTION */
 .searchWrapper {
   margin-bottom: 1rem;
   width: 100%;
@@ -65,22 +63,12 @@
   font-size: 0.85rem;
 }
 
-/* TABLE SECTION */
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
   background-color: #111;
   border-radius: 8px;
   border: 1px solid #222;
-}
-
-.tableWrapper::-webkit-scrollbar {
-  height: 8px;
-}
-
-.tableWrapper::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 10px;
 }
 
 .table {
@@ -95,6 +83,7 @@
   background-color: #1a1a1a;
   color: #94a3b8;
   font-size: 0.7rem;
+  text-transform: uppercase;
 }
 
 .td {
@@ -104,29 +93,87 @@
   border-bottom: 1px solid #222;
 }
 
-/* RESPONSIVE DESKTOP (Balik ke Grid kalau layar lebar) */
-@media (min-width: 768px) {
+.summarySection {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+.summaryTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* FOOTER STYLES - PENYEIMBANGAN FLEXBOX */
+.footerRow {
+  background-color: rgba(16, 185, 129, 0.05);
+  border-top: 2px solid #10b981;
+}
+
+.fullFooterContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1rem;
+  width: 100%;
+}
+
+.grandLabel {
+  color: #10b981;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.grandValue {
+  color: #10b981;
+  font-weight: 800;
+  font-size: 1.1rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.badgeMasuk { 
+  background-color: rgba(16, 185, 129, 0.1); 
+  color: #10b981; 
+  padding: 2px 6px; 
+  border-radius: 4px; 
+  font-size: 0.7rem; 
+  font-weight: 600;
+}
+
+.badgeKeluar { 
+  background-color: rgba(239, 68, 68, 0.1); 
+  color: #ef4444; 
+  padding: 2px 6px; 
+  border-radius: 4px; 
+  font-size: 0.7rem; 
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .container { padding: 2rem; }
+  .title { font-size: 1.75rem; margin-bottom: 1.5rem; }
   .kpiGrid {
-    flex-direction: row; /* Desktop tetap menyamping */
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .kpiCard { padding: 1.5rem; }
+  .kpiValue { font-size: 2rem; }
+  .kpiSub { display: block; font-size: 0.8rem; color: #64748b; }
+  .searchWrapper { max-width: 500px; }
+  .searchInput { font-size: 1rem; }
+  .th { padding: 1.2rem 1rem; font-size: 0.85rem; }
+  .td { padding: 1.2rem 1rem; font-size: 1rem; }
+  .summarySection { max-width: 850px; }
+  .summaryTitle { font-size: 1.25rem; }
+
+  .fullFooterContent {
+    padding: 1.5rem;
   }
   
-  .kpiCard {
-    flex-direction: column; /* Desktop tumpuk dalam kartu */
-    align-items: flex-start;
-    padding: 1.25rem;
-  }
-
-  .kpiValue {
-    font-size: 1.5rem;
-    margin-top: 5px;
-  }
-
-  .kpiSub {
-    display: block;
-    font-size: 0.7rem;
-    color: #64748b;
-  }
+  .grandLabel { font-size: 1rem; }
+  .grandValue { font-size: 1.5rem; }
 }
