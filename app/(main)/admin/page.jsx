@@ -6,6 +6,7 @@ import styles from './admin.module.css';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import ModalEdit from '../../components/ModalEdit';
+import ModalEditUser from '../../components/ModalEditUser';
 
 const MySwal = withReactContent(Swal);
 const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -18,16 +19,15 @@ export default function AdminPage() {
   const [searchKas, setSearchKas] = useState('');
   const [searchAnggota, setSearchAnggota] = useState('');
 
-  // State Transaksi (Create)
+  // State Transaksi
   const [form, setForm] = useState({ anggota_id: '', nominal: '', tipe: 'masuk', keterangan: '', bulan: new Date().getMonth() + 1 });
-
-  // State Transaksi (Edit Modal)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
   // State Anggota
-  const [editAnggotaId, setEditAnggotaId] = useState(null);
-  const [namaBaru, setNamaBaru] = useState('');
+  const [namaBaru, setNamaBaru] = useState(''); // Khusus untuk create
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [editUserData, setEditUserData] = useState(null);
 
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
@@ -47,7 +47,6 @@ export default function AdminPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Filter Real-time
   const filteredKas = originalKas.filter(i => 
     i.anggota?.nama?.toLowerCase().includes(searchKas.toLowerCase()) || 
     NAMA_BULAN[i.bulan-1].toLowerCase().includes(searchKas.toLowerCase())
@@ -59,7 +58,7 @@ export default function AdminPage() {
 
   const Toast = MySwal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: '#111', color: '#fff' });
 
-  // --- HANDLER TRANSAKSI (CREATE) ---
+  // --- HANDLER TRANSAKSI ---
   const handleCreateKas = async (e) => {
     e.preventDefault();
     const res = await MySwal.fire({ title: 'Simpan Transaksi?', icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', background: '#111', color: '#fff' });
@@ -78,7 +77,6 @@ export default function AdminPage() {
     }
   };
 
-  // --- HANDLER TRANSAKSI (UPDATE VIA MODAL) ---
   const handleUpdateKas = async (id, updatedForm) => {
     const res = await MySwal.fire({ title: 'Update Transaksi?', icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', background: '#111', color: '#fff' });
     
@@ -107,17 +105,27 @@ export default function AdminPage() {
   };
 
   // --- HANDLER ANGGOTA ---
-  const handleSubmitAnggota = async (e) => {
+  const handleCreateAnggota = async (e) => {
     e.preventDefault();
-    const { error } = editAnggotaId 
-      ? await supabase.from('anggota').update({ nama: namaBaru }).eq('id', editAnggotaId) 
-      : await supabase.from('anggota').insert([{ nama: namaBaru }]);
+    const { error } = await supabase.from('anggota').insert([{ nama: namaBaru }]);
     
     if (!error) { 
       setNamaBaru(''); 
-      setEditAnggotaId(null); 
       fetchData(); 
-      Toast.fire({ icon: 'success', title: 'Berhasil' }); 
+      Toast.fire({ icon: 'success', title: 'Anggota ditambah!' }); 
+    }
+  };
+
+  const handleUpdateAnggota = async (id, updatedNama) => {
+    const { error } = await supabase.from('anggota').update({ nama: updatedNama }).eq('id', id);
+    
+    if (!error) {
+      setIsUserModalOpen(false);
+      setEditUserData(null);
+      fetchData();
+      Toast.fire({ icon: 'success', title: 'Berhasil diupdate!' });
+    } else {
+      Toast.fire({ icon: 'error', title: 'Gagal update' });
     }
   };
 
@@ -136,13 +144,22 @@ export default function AdminPage() {
     <div className={styles.container}>
       <h1 className={styles.title}>Kelola Admin</h1>
 
-      {/* MODAL EDIT */}
+      {/* MODAL EDIT TRANSAKSI */}
       <ModalEdit 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         data={editData} 
         originalAnggota={originalAnggota} 
         onSave={handleUpdateKas}
+        styles={styles}
+      />
+
+      {/* MODAL EDIT ANGGOTA */}
+      <ModalEditUser 
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        data={editUserData}
+        onSave={handleUpdateAnggota}
         styles={styles}
       />
 
@@ -238,15 +255,14 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* KELOLA ANGGOTA */}
+      {/* KELOLA ANGGOTA (STRICTLY CREATE) */}
       <div className={styles.anggotaCard}>
         <h2 className="text-xs font-bold mb-4 uppercase tracking-widest text-emerald-500">👥 Daftar Anggota</h2>
-        <form onSubmit={handleSubmitAnggota} className={styles.flexRow}>
+        <form onSubmit={handleCreateAnggota} className={styles.flexRow}>
           <div className={styles.inputGroup} style={{flex: 1}}>
             <input type="text" className={styles.input} placeholder="Nama anggota baru..." value={namaBaru} onChange={e => setNamaBaru(e.target.value)} required />
           </div>
-          <button type="submit" className={styles.buttonSubmit}>{editAnggotaId ? 'Update' : '+ Tambah'}</button>
-          {editAnggotaId && <button type="button" onClick={() => {setEditAnggotaId(null); setNamaBaru('');}} className={styles.buttonDelete}>Batal</button>}
+          <button type="submit" className={styles.buttonSubmit}>+ Tambah</button>
         </form>
         
         <input type="text" className={styles.input + " mt-4"} placeholder="Cari nama..." value={searchAnggota} onChange={e => setSearchAnggota(e.target.value)} />
@@ -261,7 +277,10 @@ export default function AdminPage() {
                   <td className={styles.td}>{a.nama}</td>
                   <td className={styles.td}>
                     <div className="flex gap-1">
-                      <button onClick={() => {setEditAnggotaId(a.id); setNamaBaru(a.nama);}} className={styles.buttonEdit}>Edit</button>
+                      <button onClick={() => {
+                        setEditUserData(a);
+                        setIsUserModalOpen(true);
+                      }} className={styles.buttonEdit}>Edit</button>
                       <button onClick={() => handleHapusAnggota(a.id, a.nama)} className={styles.buttonDelete}>Hapus</button>
                     </div>
                   </td>
